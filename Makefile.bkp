@@ -1,0 +1,54 @@
+TEXT_BASE  = 0x00010000	# Starting address of code in RAM
+
+TOPDIR	:= $(shell if [ "$$PWD" != "" ]; then echo $$PWD; else pwd; fi)
+export	TOPDIR
+
+CROSS_COMPILE = arm-linux-gnueabihf-
+
+PLATFORM_RELFLAGS = -fno-strict-aliasing  -fno-common -mhard-float
+PLATFORM_CPPFLAGS = -march=armv7
+
+OPTFLAGS = -O3 -fomit-frame-pointer 
+
+CPPFLAGS = $(OPTFLAGS) $(PLATFORM_RELFLAGS)  -I$(TOPDIR) -fno-builtin -pipe $(PLATFORM_CPPFLAGS)
+CFLAGS   = $(CPPFLAGS) -g -c		# C files compile only;
+LDFLAGS  = -nostdlib -Bstatic -T bootstrap.lds -Ttext $(TEXT_BASE)
+
+AS      = $(CROSS_COMPILE)as
+AR	= $(CROSS_COMPILE)ar
+LD      = $(CROSS_COMPILE)ld
+CC      = $(CROSS_COMPILE)gcc
+STRIP	= $(CROSS_COMPILE)strip
+OBJCOPY = $(CROSS_COMPILE)objcopy 
+
+OBJS    := $(shell ls *.c)
+OBJS    := $(OBJS:.c=.o)
+SOBJS   := $(shell ls *.S)
+SOBJS   := $(SOBJS:.S=.o)
+
+export  CROSS_COMPILE PLATFORM_RELFLAGS PLATFORM_CPPFLAGS OPTFLAGS CPPFLAGS CFLAGS LDFLAGS \
+	LDFLAGS LIBGCC AS AR LD CC OBJCOPY OBJS SOBJS MAKE 
+
+all:    clean bootstrap.bin
+
+bootstrap.bin:    bootstrap
+	$(OBJCOPY) -O binary bootstrap bootstrap.bin
+	ls -l bootstrap.bin
+	ls -lh bootstrap.bin
+
+bootstrap:  subdirs $(OBJS) $(SOBJS)
+	$(LD) $(LDFLAGS) $(OBJS) $(SOBJS) $(LIBGCC) -Map bootstrap.map -o bootstrap
+
+subdirs:
+	@for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir || exit 1 ; done
+
+clean : 
+	rm -f *.o
+	rm -f bootstrap bootstrap.bin bootstrap.map
+
+
+%.o:    %.S
+	$(AS) -o $@ $<
+%.o:    %.c
+	$(CC) $(CFLAGS) $<
+
