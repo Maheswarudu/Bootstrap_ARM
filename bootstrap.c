@@ -48,59 +48,25 @@ unsigned long load_addr;
 
 void start_bootstrap(void)
 {
-   unsigned long cnf,size=0,power;
-   int bootdelay = 2;
-
-   //size = rd_d(MERS_BASE + 0x04);
-   //power = rd_b(0x4026800C) & 0x7; 
-   //size = 8 * (1 << power);
+	unsigned long cnf,size=0,power;
+	int bootdelay = 2;
  
-   //sys_init();
-  
-   PRINTF(" \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-   PRINTF("       ---------------------------------------------------------------- \n");     
-   PRINTF("                        %s     \n", bootstrap_string);
-   PRINTF("       ---------------------------------------------------------------- \n\n");
-   PRINTF("Build Date       : %s\n",date_time_string); 
-   PRINTF("Version          : %s\n",version_string);
-  //if(rd_d(0x4026800C) & ( 1 << 15))	
-  // PRINTF("SDRAM size       : %d MB\n",2*size);
-  //else
-  // PRINTF("SDRAM size       : %d MB\n",size);
-  
-   #ifdef CMD_FLASH
-     size = flash_init(FLASH_ADDR);
-     display_flash_size(size);
-   #endif
-   #ifdef  CMD_SPI_FLASH
-     size = get_spi_flash_size();
-     display_flash_size(size);
-     printf("No of Sectors    : %d\n",spi_flash_sectors); 
-   #endif
-   printf("\n");
+	PRINTF(" \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	PRINTF("       ---------------------------------------------------------------- \n");
+	PRINTF("                        %s     \n", bootstrap_string);
+	PRINTF("       ---------------------------------------------------------------- \n\n");
+	PRINTF("Build Date       : %s\n",date_time_string);
+	PRINTF("Version          : %s\n",version_string);
 
-#ifdef ENABLE_SPI
-   if(!abortboot(bootdelay))
-   {
-      if (epio_spi_check_id_string())
-          epio_spi_run_eeprom_cfg();
-      else
-         printf(" MCSTAGS not found\n");
-   }
-   else
-#endif
-   {
-    #ifdef COMMANDS
-      for(;;)
-      {
-        command_line();
-        if(strlen(console_buffer)  > 1)
-          execute_command(console_buffer);
-      }  
-    #endif 
-   }
-
-   while(1);
+#ifdef COMMANDS
+	for(;;)
+	{
+		command_line();
+		if(strlen(console_buffer)  > 1)
+		execute_command(console_buffer);
+	}
+	#endif 
+	while(1);
 }
 
 #ifdef COMMANDS
@@ -245,7 +211,7 @@ int execute_command(char *cmd)
    if(strcmp(argv[0] , "help") == 0)
    {
       printf(" Supported Commands: \n\n");
-      printf(" version        -  To display current version of IBOOT\n");
+      printf(" version        -  To display current version of BOOTSTRAP\n");
       printf(" reset          -  Soft reset\n");
       printf(" md             -  To display memory contents\n");
       printf(" mw             -  To write into memory\n");
@@ -273,7 +239,7 @@ int execute_command(char *cmd)
    }
    else if(strcmp(argv[0] , "version") == 0)
    {
-    printf("iBOOT Version     : %s\n",version_string);
+    printf("BOOTSTRAP Version     : %s\n",version_string);
    }
    else if(strcmp(argv[0] , "reset") == 0)
    {

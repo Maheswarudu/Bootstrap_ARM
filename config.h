@@ -12,9 +12,9 @@
 #endif
 
 #ifdef DBG_PRINTF
-  #define PRINTF(str ,args...) printf(str ,## args)
+  #define PRINTF(str, args...) printf(str, ##args)
 #else
-  #define PRINTF(str ,args...) 
+  #define PRINTF(str, args...) 
 #endif 
 
 #endif

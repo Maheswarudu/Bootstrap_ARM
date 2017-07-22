@@ -41,7 +41,7 @@ _start:
         orr     r0, r0, #0x00001000     @ set bit 12 (I) I-cache
 #endif
         mcr     p15, 0, r0, c1, c0, 0
-	bl relocate
+	#bl relocate
         bl sys_init                    @ Cortex A5 CPU initilization
 
 .global _TEXT_BASE                     @ Code relocation

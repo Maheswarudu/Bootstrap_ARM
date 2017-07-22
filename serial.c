@@ -31,9 +31,9 @@
     #define SULU_UART_FIFO_RX_NEAR_FULL          0x200
     #define SULU_UART_FIFO_TX_ALMOST_EMPTY       0x400
 
-#if 0
 void serial_setbrg(int baudrate)
 {
+#if 0
     int baud_rate_divisor;
 	
     baud_rate_divisor = (SERIAL_PORT_CLK)/(baudrate);
@@ -42,8 +42,8 @@ void serial_setbrg(int baudrate)
     wr_b(__UART_REGS_DLL, baud_rate_divisor & 0xFF); /* Set baud rate into DLL & DLH */
     wr_b(__UART_REGS_DLH, baud_rate_divisor >>8);
     wr_b(__UART_REGS_LCR, LCR_8D | LCR_1S );         /* Serial port set to 8-N-1 ; Disable DLL/DLH registers */ 
-}
 #endif
+}
               
 void serial_init()
 {
@@ -69,9 +69,9 @@ void serial_init()
  */
 int serial_getc(void)
 {
-    //while (rd_b(SULU_UART_RX_FILL_LEVEL) == 0);//polls till data not received
+	while((rd_b(SULU_UART1+SULU_UART_FIFO_STAT_CLR)&1) != 0);
   
-    return rd_b(SULU_UART1+SULU_UART_RX_DATA);//reads receive buffer register
+	return rd_b(SULU_UART1+SULU_UART_RX_DATA);//reads receive buffer register
 }
 
 /*
@@ -79,17 +79,12 @@ int serial_getc(void)
  */
 void serial_putc(const char c)
 {
-	while (rd_b(SULU_UART_TX_FREE_LEVEL) != 0);//polls till data not received
+	while((rd_b(SULU_UART1+SULU_UART_FIFO_STAT_CLR)&1<<1) != 0);
 
 	wr_b((SULU_UART1+SULU_UART_TX_DATA),c);
 	
-#if 0
-    while ((rd_b(__UART_REGS_LSR) & LSR_Tx_Empty) == 0);//polls on transmit holding register
-    wr_b(__UART_REGS_THR, c);//wites transmit holding register
-
-    if(c == '\n')
-    serial_putc('\r');
-#endif
+	if(c == '\n')
+		serial_putc('\r');
 }
 
 /*
@@ -106,7 +101,6 @@ int serial_tstc(void)
 
 void serial_trace(char *str)
 {
-#if 0
     int i=0;
 
     while(str[i] != '\0')
@@ -114,5 +108,4 @@ void serial_trace(char *str)
        serial_putc(str[i]);
        i++;
      }
-#endif
 }
